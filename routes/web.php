@@ -11,6 +11,5 @@
 |
 */
 
-Route::get('/', function () {
-    return view('welcome');
-});
+Route::view('admin/{path?}', 'app-be');
+Route::view('/{path?}', 'app');

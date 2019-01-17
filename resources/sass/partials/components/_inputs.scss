@@ -1,0 +1,141 @@
+.btn-iica-green {
+    color: #FFF;
+    background-color: $green-light;
+    border-color: $green2-light;
+    left: 0;
+
+    &:hover, &:focus {
+        color: white;
+        text-decoration: underline;
+        background-color: $green-light;
+        background-color: $green2-light;
+    }
+
+    & .badge {
+        background-color: white;
+        color: $green-light;
+    }
+}
+
+.btn-iica-blue-light {
+    color: #FFF;
+    background-color: $blue-light;
+    border-color: $blue-dark;
+
+    &:hover, &:focus {
+        color: white;
+        font-weight: bold;
+        background-color: $blue-dark;
+    }
+
+    & .badge {
+        background-color: white;
+        color: $blue-light;
+    }
+}
+
+.search-bar {
+
+    .input-group-btn .btn {
+        border-left-width: 0;
+        left: -2px;
+        -webkit-box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.075);
+        box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.075);
+
+        & > .material-icons {
+            display: block;
+        }
+    }
+
+    .form-control:focus {
+        -webkit-box-shadow: none;
+        box-shadow: none;
+        border-color: #cccccc;
+    }
+}
+
+.float-input {
+    position: relative;
+    margin-top: 16px;
+
+    input, select, textarea {
+        background: none;
+        z-index: 1;
+
+        &.focused + label, &.filled + label {
+            font-size: 0.9em;
+            top: -8px;
+            z-index: 2;
+            background: white;
+            padding: 0 5px;
+        }
+    }
+
+    label {
+        position: absolute;
+        top: 6px;
+        left: 12px;
+        @include transition(1s);
+        color: $blue-light;
+    }
+}
+
+.label-input, .label-input-top {
+    position: relative;
+    margin-top: 16px;
+
+    label {
+        @include label-style;
+    }
+
+    .select2-container {
+        display: block;
+    }
+
+    .select2-container--default .select2-selection--single {
+        border: 1px solid #ccc;
+        padding: 6px 12px;
+        height: 34px;
+
+        .select2-selection__arrow {
+            margin-top: 3px;
+        }
+    }
+}
+
+.label-input-top label {
+    top: -18px;
+}
+
+.checkbox {
+    padding-top: 6px;
+
+    label {
+        font-weight: bold;
+    }
+}
+
+select {
+    &.valid {
+        background-position: right 22px center !important;
+    }
+
+    &.error {
+        background-position: right 22px center !important;
+    }
+}
+
+.glyphicons-iica {
+    font-size: 20px;
+    color: $green4-light;
+}
+
+.glyphicons-danger {
+    font-size: 20px;
+    color: $red-light;
+}
+
+.gv-buttons {
+    width: 6%;
+    text-align: center;
+}

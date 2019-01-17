@@ -1,0 +1,37 @@
+.play-navbar {
+    height: 100px;
+    background-color: $blue-dark;
+    padding: 0 16px;
+
+    .menu {
+        float: right;
+        list-style-type: none;
+        height: 100px;
+        line-height: 100px;
+        margin-right: 20px;
+
+        li {
+            display: inline-block;
+            color: white;
+            font-size: 2rem;
+            margin: 0 20px;
+
+            .glyphicon {
+                margin-right: 10px;
+            }
+
+            a, a:hover {
+                color: inherit;
+            }
+
+            a:hover {
+                font-weight: bold;
+                text-decoration: none;
+            }
+        }
+
+        .btn {
+            font-size: 2rem;
+        }
+    }
+}

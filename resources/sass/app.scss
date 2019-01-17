@@ -1,14 +1,15 @@
-
-// Fonts
-@import url('https://fonts.googleapis.com/css?family=Nunito');
-
-// Variables
-@import 'variables';
+@import 'https://fonts.googleapis.com/css?family=Nunito:200,600"';
+@import 'https://fonts.googleapis.com/icon?family=Material+Icons';
 
 // Bootstrap
-@import '~bootstrap/scss/bootstrap';
+@import '~bootstrap-sass/assets/stylesheets/bootstrap';
 
-.navbar-laravel {
-  background-color: #fff;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.04);
-}
+@import "partials/_variables.scss";
+@import "partials/_mixins.scss";
+
+@import "partials/_base.scss";
+@import "partials/_helpers.scss";
+
+@import "partials/components/_buttons.scss";
+@import "partials/components/_inputs.scss";
+@import "partials/components/_navigation.scss";
