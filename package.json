@@ -26,6 +26,8 @@
     },
     "dependencies": {
         "bootstrap-sass": "^3.4.0",
+        "filepond": "^3.7.5",
+        "react-filepond": "^5.0.0",
         "react-router-dom": "^4.3.1"
     }
 }
