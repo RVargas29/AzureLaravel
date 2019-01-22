@@ -12,15 +12,24 @@ class VideoController extends Controller
         /*$validation = $request->validate([
             'filepond' => 'required|file|mimetypes:video/x-ms-asf,video/x-flv,video/mp4,application/x-mpegURL,video/MP2T,video/3gpp,video/quicktime,video/x-msvideo,video/x-ms-wmv,video/avi'
         ]);*/
-        return $this->saveFileToAzure($request);  
+        return $this->saveFileLocally($request);  
     }
 
-    private function saveFileToAzure(Request $request) {
+    public function delete(Request $request) {
+        $input = $request->all();
+        $i = 1;
+    }
+
+    private function saveFileLocally(Request $request) {
         $file = $request->file('filepond');    
         $fileName = $this->renameFile($file->getClientOriginalName());
-
         try {
-            return Storage::disk('azure')->put($fileName, $file);
+            //Guardo localmente el archivo en una carpeta temporal.
+            $filePath = Storage::putFileAs('tmp', $file, $fileName);
+            //Ejecuto el trabajo para guardar el archivo en el servidor de Azure.
+            $this->dispatch(new \App\Jobs\UploadToAzure($filePath));
+            //Retorno el path temporal que se creó para el archivo.
+            return $filePath;
         }catch(Exception $e) {
             return null;
         }

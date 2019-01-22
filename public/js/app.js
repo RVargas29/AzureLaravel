@@ -72859,21 +72859,54 @@ var AddVideo =
 function (_Component) {
   _inherits(AddVideo, _Component);
 
-  function AddVideo() {
+  function AddVideo(props) {
+    var _this;
+
     _classCallCheck(this, AddVideo);
 
-    return _possibleConstructorReturn(this, _getPrototypeOf(AddVideo).apply(this, arguments));
+    _this = _possibleConstructorReturn(this, _getPrototypeOf(AddVideo).call(this, props));
+    _this.state = {
+      language: 0,
+      title: '',
+      description: '',
+      files: [],
+      errors: []
+    };
+    return _this;
   }
 
   _createClass(AddVideo, [{
     key: "render",
     value: function render() {
+      var _this2 = this;
+
       return react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("div", {
         className: "container"
       }, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("h1", null, "Upload video"), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(react_filepond__WEBPACK_IMPORTED_MODULE_2__["FilePond"], {
         className: "margin-top-20",
-        server: "./api/videos/upload"
-      }));
+        server: {
+          process: {
+            url: '/api/videos/upload'
+          },
+          revert: {
+            url: '/api/videos/delete',
+            method: 'POST'
+          }
+        },
+        onupdatefiles: function onupdatefiles(fileItems) {
+          _this2.setState({
+            files: fileItems.map(function (fileItem) {
+              return fileItem.file;
+            })
+          });
+        }
+      }, this.state.files.map(function (file) {
+        return react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(react_filepond__WEBPACK_IMPORTED_MODULE_2__["File"], {
+          key: file,
+          src: file,
+          origin: "local"
+        });
+      })));
     }
   }]);
 

@@ -18,3 +18,4 @@ Route::middleware('auth:api')->get('/user', function (Request $request) {
 });
 
 Route::post('videos/upload', 'VideoController@upload');
+Route::post('videos/delete', 'VideoController@delete');
