@@ -6,12 +6,48 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades;
 use Illuminate\Support\Facades\Storage;
 
+use App\Video;
+use App\Tag;
+
 class VideoController extends Controller
-{
+{   
+    //Index 
+    public function getIndex() {
+        $videos = Videos::orderBy('created_at', 'desc')->get();
+        return view('admin.video.index', ['videos' => $videos]);
+    }
+
+    //Add
+    public function getAdd() {
+        $tags = Tag::all();
+        return view('admin.videos.add');
+    }
+
+    public function postAdd(Request $request) {
+        $this->validate($request, [
+            'title' => 'required|min:5',
+            'url' => 'required'
+        ]);
+
+        $video = new Video([
+            'title' => $request->input('title'),
+            'url' => $request->input('url'),
+            'thumbnail' => $request->input('thumbnail')
+        ]);
+
+        $video->save();
+        $video->tags()->attach($request->input('tags') === null ? [] : $request->input('tags'));    
+
+        return redirect()->route('admin.video.index')->with('info', 'Video added with title: ' . $request->input('title'));
+    }
+}
+
+
+
+
+/*
+class VideoControllerOld extends Controller {
     public function upload(Request $request) {
-        /*$validation = $request->validate([
-            'filepond' => 'required|file|mimetypes:video/x-ms-asf,video/x-flv,video/mp4,application/x-mpegURL,video/MP2T,video/3gpp,video/quicktime,video/x-msvideo,video/x-ms-wmv,video/avi'
-        ]);*/
         return $this->saveFileLocally($request);  
     }
 
@@ -48,4 +84,4 @@ class VideoController extends Controller
         
         return $sb;
     }
-}
+}*/

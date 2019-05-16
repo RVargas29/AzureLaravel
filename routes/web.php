@@ -11,5 +11,32 @@
 |
 */
 
-Route::view('admin/{path?}', 'app-be');
-Route::view('/{path?}', 'app');
+//Route::view('admin/{path?}', 'app-be');
+//Route::view('/{path?}', 'app');
+
+Route::group(['prefix' => 'admin/videos'], function () {
+    //Index
+    Route::get('', [
+        'uses' => 'PostController@getIndex',
+        'as' => 'admin.videos.index'
+    ]);
+
+    //Add
+    Route::get('add', [
+        'uses' => 'VideoController@getAdd',
+        'as' => 'admin.videos.add']
+    );
+    Route::post('add', [
+        'uses' => 'VideoController@postAdd',
+        'as' => 'admin.videos.add'
+    ]);
+    //Update
+    Route::get('edit/{id}', [
+        'uses' => 'VideoController@getEdit',
+        'as' => 'admin.videos.edit'
+    ]);
+    Route::post('edit', [
+        'uses' => 'VideoController@postEdit',
+        'as' => 'admin.videos.update'
+    ]);
+});
