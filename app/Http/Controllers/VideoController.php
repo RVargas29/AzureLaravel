@@ -8,67 +8,53 @@ use Illuminate\Support\Facades\Storage;
 
 use App\Video;
 use App\Tag;
+use App\Classes\UploadToAzure;
+use App\Jobs\AssignStreamingURL;
 
 class VideoController extends Controller
 {   
     //Index 
     public function getIndex() {
-        $videos = Videos::orderBy('created_at', 'desc')->get();
+        $videos = Video::orderBy('created_at', 'desc')->get();
         return view('admin.video.index', ['videos' => $videos]);
     }
 
     //Add
     public function getAdd() {
         $tags = Tag::all();
-        return view('admin.videos.add');
+        return view('admin.video.add', ['tags' => $tags]);
     }
 
     public function postAdd(Request $request) {
         $this->validate($request, [
             'title' => 'required|min:5',
-            'url' => 'required'
         ]);
 
         $video = new Video([
             'title' => $request->input('title'),
-            'url' => $request->input('url'),
-            'thumbnail' => $request->input('thumbnail')
+            'description' => $request->input('description')
         ]);
+
+        $file = $request->file('video');
+
+        $fileName = $this->saveFile($file);
 
         $video->save();
         $video->tags()->attach($request->input('tags') === null ? [] : $request->input('tags'));    
 
+        AssignStreamingURL::dispatch($video->id, $fileName)->delay(now()->addMinutes(5));
+
         return redirect()->route('admin.video.index')->with('info', 'Video added with title: ' . $request->input('title'));
     }
-}
 
-
-
-
-/*
-class VideoControllerOld extends Controller {
-    public function upload(Request $request) {
-        return $this->saveFileLocally($request);  
-    }
-
-    public function delete(Request $request) {
-        $input = $request->all();
-        $i = 1;
-    }
-
-    private function saveFileLocally(Request $request) {
-        $file = $request->file('filepond');    
+    private function saveFile($file) {
         $fileName = $this->renameFile($file->getClientOriginalName());
         try {
-            //Guardo localmente el archivo en una carpeta temporal.
-            $filePath = Storage::putFileAs('tmp', $file, $fileName);
-            //Ejecuto el trabajo para guardar el archivo en el servidor de Azure.
-            $this->dispatch(new \App\Jobs\UploadToAzure($filePath));
-            //Retorno el path temporal que se creó para el archivo.
-            return $filePath;
-        }catch(Exception $e) {
+            $azureUploader = new UploadToAzure();
+            return $azureUploader->uploadFileToAzure($file, $fileName);            
+        } catch (Exception $e) {
             return null;
-        }
+        }        
     }
 
     private function renameFile($originalFileName) {
@@ -84,4 +70,4 @@ class VideoControllerOld extends Controller {
         
         return $sb;
     }
-}*/
+}

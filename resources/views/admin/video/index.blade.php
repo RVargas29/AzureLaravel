@@ -12,7 +12,7 @@
     @endif  
     <div class="row">
         <div class="col-md-12">
-            <a href="{{ route('admin.create') }}" class="btn btn-success">Agregar</a>
+            <a href="{{ route('admin.videos.add') }}" class="btn btn-success">Agregar</a>
         </div>
     </div>
     <hr>

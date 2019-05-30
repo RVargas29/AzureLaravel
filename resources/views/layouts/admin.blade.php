@@ -17,7 +17,7 @@
                     <a href="#home"><span class="glyphicon glyphicon-home"></span> Home</a>
                 </li>
                 <li>
-                    <a href="{{ url(/videos") }}> Videos</a>
+                    <a href="{{ route('admin.videos.index') }}> Manage Videos</a>
                 </li>
                 <li>
                     <a href="#search">Buscar</a>

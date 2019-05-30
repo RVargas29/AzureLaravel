@@ -14,5 +14,6 @@ return[
     'storage_account_name'  => env('AZURE_STORAGE_NAME'),
     'storage_account_key'       => env('AZURE_STORAGE_KEY'),
     'storage_account_container' => env('AZURE_STORAGE_CONTAINER'), 
+    'storage_account_asset_container' => env('AZURE_ASSET_STORAGE_CONTAINER'),
     'streaming_endpoint_url' => env('AZURE_STREAMING_ENDOPOINT'),
 ];

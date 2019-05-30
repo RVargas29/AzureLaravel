@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Jobs;
+namespace App\Classes;
 
 use Illuminate\Bus\Queueable;
 use Illuminate\Queue\SerializesModels;
@@ -12,45 +12,38 @@ use Illuminate\Support\Facades\Storage;
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\ClientException;
 
-class UploadToAzure implements ShouldQueue
-{
-    use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
+class UploadToAzure {
 
-    private $filePath;
     private $httpClient;
     private $defaultHeaders;
 
-    /**
-     * Create a new job instance.
-     *
-     * @return void
-     */
-    public function __construct($filePath)
-    {
-        $this->filePath = $filePath;
+    private $outputAssetResponse;
+    private $transformResponse;
+    private $jobResponse;
+    private $streamingLocatorResponse;
+    private $listPathsResponse;
+
+    public function __construct() {
+        //Creo el cliente HTTP
+        $this->httpClient = new \GuzzleHttp\Client();       
+        //Obtengo el token de autorización
+        $authorizationToken = $this->getAuthToken();
+        //Declaro los headers default para los request
+        $this->defaultHeaders = [
+            'Accept' => 'application/json',
+            'Content-Type' => 'application/json',
+            'Authorization' => 'Bearer ' . $authorizationToken,
+        ];
     }
 
-    /**
-     * Execute the job.
-     *
-     * @return void
-     */
-    public function handle()
-    {
-        return $this->uploadFileToAzure($this->filePath);
-    }
-
-    private function uploadFileToAzure($filePath) {
-        $file = Storage::get($filePath);
-
-        $extension = pathinfo($filePath, PATHINFO_EXTENSION);
-        $fileName = basename($filePath, '.' . $extension);
-
+    public function uploadFileToAzure($file, $fileName) {
+        $blobPath = pathinfo($fileName, PATHINFO_FILENAME);        
         try {
             //Inicio la carga del video a Azure.
-            $azureResult = Storage::disk('azure')->put($fileName . '.' . $extension, $file);
+            $azureResult = Storage::disk('azure')->put($blobPath, $file);
             if($azureResult) {
-                $this->encodeVideo($fileName, $fileName . '.' . $extension);
+                $this->encodeVideo($blobPath, $azureResult);
+                return $blobPath;
             } else {
                 return "No se pudo cargar el archivo.";
             }            
@@ -59,16 +52,28 @@ class UploadToAzure implements ShouldQueue
         }        
     }
 
-    private function encodeVideo($fileName, $azureFilePath) {
-        //Creo el cliente HTTP
-        $this->httpClient = new \GuzzleHttp\Client();       
-        //Obtengo el token de autorización
-        $authorizationToken = $this->getAuthToken();
-        //Declaro los headers default para los request
-        $this->defaultHeaders = [
-            'Accept' => 'application/json',
-            'Authorization' => 'Bearer ' . $authorizationToken,
-        ];
+    public function getPaths($fileName) {
+        $this->createStreamingLocator($fileName);
+        $response = $this->httpClient->request('POST',
+            'https://management.azure.com/subscriptions/'. config('azure.subscription_id') .'/resourceGroups/'. config('azure.resource_group_name') .'/providers/Microsoft.Media/mediaServices/' . config('azure.account_name') . '/streamingLocators/locatorFor_' . $fileName . '/listPaths?api-version=' . config('azure.api_version'),
+            [
+                'headers' => $this->defaultHeaders,
+            ]
+        );
+        return json_decode($response->getBody()->getContents());
+    }
+
+    public function getJob($fileName) {
+        $response = $this->httpClient->request('GET',
+        'https://management.azure.com/subscriptions/'. config('azure.subscription_id') .'/resourceGroups/'. config('azure.resource_group_name') .'/providers/Microsoft.Media/mediaServices/' . config('azure.account_name') . '/transforms/' . config('azure.transform_name') . '/jobs/process_' . $fileName .'?api-version=' .  config('azure.api_version'),
+            [
+                'headers' => $this->defaultHeaders,
+            ]
+        );
+        return json_decode($response->getBody()->getContents());
+    }
+
+    private function encodeVideo($fileName, $azureFilePath) {        
         //Creo el output asset
         $this->createOutputAsset($fileName);
         //Si la transformación no existe la creo.
@@ -76,9 +81,10 @@ class UploadToAzure implements ShouldQueue
         //Creo el trabajo de transformación
         $this->createJob($azureFilePath, $fileName);
         //Creo el streaming locator
-        $this->createStreamingLocator($fileName);
+        //$this->createStreamingLocator($fileName);
         //Genero los URL
-        $this->generatePlaybackURLS($fileName);
+        //$this->generatePlaybackURLS($fileName);
+
         return false;
     }
 
@@ -112,7 +118,7 @@ class UploadToAzure implements ShouldQueue
                 'headers' => $this->defaultHeaders,
             ]
         );
-        $responseBody = json_decode($response->getBody()->getContents());
+        $this->outputAssetResponse = json_decode($response->getBody()->getContents());
     }
 
     private function createTransformIfNotExist() {
@@ -124,7 +130,7 @@ class UploadToAzure implements ShouldQueue
                     'headers' => $this->defaultHeaders,
                 ]
             );
-            $responseBody = json_decode($response->getBody()->getContents());
+            $this->transformResponse = json_decode($response->getBody()->getContents());
         } catch(ClientException $e) {
             //404, no existe la transformación entonces la creo.
             $response = $this->httpClient->request('PUT',
@@ -148,7 +154,7 @@ class UploadToAzure implements ShouldQueue
                     'headers' => $this->defaultHeaders,
                 ]
             );
-            $responseBody = json_decode($response->getBody()->getContents());
+            $this->transformResponse = json_decode($response->getBody()->getContents());
         }        
     }
 
@@ -177,8 +183,8 @@ class UploadToAzure implements ShouldQueue
                 'headers' => $this->defaultHeaders,
             ]            
         );
-        $responseBody = json_decode($response->getBody()->getContents());
-    }
+        $this->jobResponse = json_decode($response->getBody()->getContents());
+    } 
 
     private function createStreamingLocator($fileName) {
         $response = $this->httpClient->request('PUT',
@@ -193,21 +199,6 @@ class UploadToAzure implements ShouldQueue
                 'headers' => $this->defaultHeaders,
             ]
         );
-        $responseBody = json_decode($response->getBody()->getContents());
-    }
-
-    private function listPaths($fileName) {
-        $response = $this->httpClient->request('POST',
-            'https://management.azure.com/subscriptions/'. config('azure.subscription_id') .'/resourceGroups/'. config('azure.resource_group_name') .'/providers/Microsoft.Media/mediaServices/' . config('azure.account_name') . '/streamingLocators/locatorFor_' . $fileName . '/listPaths?api-version=' . config('azure.api_version'),
-            [
-                'headers' => $this->defaultHeaders,
-            ]
-        );
-        $responseBody = json_decode($response->getBody()->getContents());
-        return $responseBody;
-    }
-
-    private function generatePlaybackURLS($steamingPaths) {
-        //ToProgramYet
-    }
+        $this->streamingLocatorResponse = json_decode($response->getBody()->getContents());
+    }    
 }

@@ -17,9 +17,12 @@ class CreateVideosTable extends Migration
             $table->increments('id');
             $table->timestamps();
             $table->string('title');
-            $table->string('url');
-            $table->string('description');
-            $table->string('thumbnail');
+            $table->string('hls_url')->nullable();
+            $table->string('dash_url')->nullable();
+            $table->string('smooth_streaming_url')->nullable();
+            $table->string('description')->nullable();
+            $table->string('thumbnail_path')->nullable();
+            $table->boolean('published')->default(false);
         });
     }
 

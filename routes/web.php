@@ -17,7 +17,7 @@
 Route::group(['prefix' => 'admin/videos'], function () {
     //Index
     Route::get('', [
-        'uses' => 'PostController@getIndex',
+        'uses' => 'VideoController@getIndex',
         'as' => 'admin.videos.index'
     ]);
 
