@@ -112,7 +112,7 @@ class UploadToAzure {
                     'properties' => [
                         'description' => 'Output asset for: ' . $fileName . '.',
                         'storageAccountName' => config('azure.storage_account_name'),
-                        'container' => config('azure.storage_account_container'),
+                        'container' => config('azure.storage_account_asset_container'),
                     ]
                 ],
                 'headers' => $this->defaultHeaders,
@@ -144,8 +144,78 @@ class UploadToAzure {
                                     'onError' => 'StopProcessingJob',
                                     'relativePriority' => 'Normal',
                                     'preset' => [
-                                        '@odata.type' => '#Microsoft.Media.BuiltInStandardEncoderPreset',
-                                        'presetName' => 'AdaptiveStreaming'
+                                        '@odata.type' => '#Microsoft.Media.StandardEncoderPreset',
+                                        "codecs"=> [
+                                            [
+                                                "@odata.type"=> "#Microsoft.Media.AacAudio",
+                                                "channels"=> 2,
+                                                "samplingRate"=> 48000,
+                                                "bitrate"=> 128000,
+                                                "profile"=> "AacLc"
+                                            ],
+                                            [
+                                                "@odata.type"=> "#Microsoft.Media.H264Video",
+                                                "keyFrameInterval"=> "PT2S",
+                                                "stretchMode"=> "AutoSize",
+                                                "sceneChangeDetection"=> false,
+                                                "complexity"=> "Balanced",
+                                                "layers"=> [
+                                                    [
+                                                        "width"=> "1280",
+                                                        "height"=> "720",
+                                                        "label"=> "HD",
+                                                        "bitrate"=> 3400000,
+                                                        "maxBitrate"=> 3400000,
+                                                        "bFrames"=> 3,
+                                                        "slices"=> 0,
+                                                        "adaptiveBFrame"=> true,
+                                                        "profile"=> "Auto",
+                                                        "level"=> "auto",
+                                                        "bufferWindow"=> "PT5S",
+                                                        "referenceFrames"=> 3,
+                                                        "entropyMode"=> "Cabac"
+                                                    ],
+                                                    [
+                                                        "width"=> "640",
+                                                        "height"=> "360",
+                                                        "label"=> "SD",
+                                                        "bitrate"=> 1000000,
+                                                        "maxBitrate"=> 1000000,
+                                                        "bFrames"=> 3,
+                                                        "slices"=> 0,
+                                                        "adaptiveBFrame"=> true,
+                                                        "profile"=> "Auto",
+                                                        "level"=> "auto",
+                                                        "bufferWindow"=> "PT5S",
+                                                        "referenceFrames"=> 3,
+                                                        "entropyMode"=> "Cabac"
+                                                    ]
+                                                ]
+                                            ],
+                                            [
+                                                "@odata.type"=> "#Microsoft.Media.PngImage",
+                                                "stretchMode"=> "AutoSize",
+                                                "start"=> "25%",
+                                                "step"=> "25%",
+                                                "range"=> "80%",
+                                                "layers"=> [
+                                                    [
+                                                        "width"=> "50%",
+                                                        "height"=> "50%"
+                                                    ]
+                                                ]
+                                            ]
+                                        ],
+                                        'formats' => [
+                                            [
+                                                '@odata.type'=> '#Microsoft.Media.Mp4Format',
+                                                'filenamePattern'=> '{Basename}-{Label}-{Bitrate}{Extension}'
+                                            ],
+                                            [
+                                                '@odata.type'=> '#Microsoft.Media.PngFormat',
+                                                'filenamePattern'=> 'TN-{Basename}-{Index}{Extension}'
+                                            ]
+                                        ]
                                     ]
                                 ],                               
                             ]
